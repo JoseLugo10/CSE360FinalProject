@@ -1,10 +1,11 @@
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.io.*;
 import java.util.*;
 
@@ -44,17 +45,24 @@ public class Main {
         file.add(item4);
 
         JMenu about = new JMenu("About");
-        JMenuItem info = new JMenuItem("About");
-        about.add(info);
 
         bar.add(file);
         bar.add(about);
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        ArrayList<ArrayList<String>> roster = new ArrayList<ArrayList<String>>();
+        String[] columnNames = {"ID", "First Name", "Last Name", "Program", "Level", "ASURITE"};
+        final Object[][][] allData = new Object[1][1][1];
+
+        ArrayList<ArrayList<ArrayList<String>>> attendanceDays = new ArrayList<ArrayList<ArrayList<String>>>();
+        int addedDays = 0;
+
+        DefaultTableModel model = new DefaultTableModel(allData[0], columnNames);
 
         item1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 files.showOpenDialog(frame);
-                //Object[][] info = getInfo(files);
                 try
                 {
                     File f1 = files.getSelectedFile();
@@ -63,32 +71,51 @@ public class Main {
                     String line;
                     String[] arr;
                     String delimiter = ",";
-                    /*while((line = br.readLine()) != null)
+                    int amountOfStudents = 0;
+                    while((line = br.readLine()) != null)
                     {
+                        amountOfStudents++;
+                        ArrayList<String> stu = new ArrayList<String>();
                         arr = line.split(delimiter);
                         for(int i = 0; i < arr.length; i++)
                         {
-                            System.out.print(arr[i] + "\n");
+                            stu.add(arr[i]);
                         }
-                    }*/
+                        roster.add(stu);
+                    }
 
-                    line = br.readLine();
-                    arr = line.split(delimiter);
-                    String[] columnNames = {"ID", "First Name", "Last Name", "Program", "Level", "ASURITE"};
-                    Object names = new Object[1][6];
-                    Object[][] info = {{arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]}};
-                    JTable table = new JTable(info, columnNames);
-                    table.repaint();
-                    table.revalidate();
+                    allData[0] = new Object[amountOfStudents][6];
+
+                    int stuNum = 0;
+                    int attribute = 0;
+                    for(ArrayList<String> student : roster)
+                    {
+                        for(String person : student)
+                        {
+                            allData[0][stuNum][attribute] = person;
+                            attribute++;
+                        }
+                        stuNum++;
+                        attribute = 0;
+                    }
+
+                    JTable table = new JTable(model)
+                    {
+                        public boolean isCellEditable(int rows, int columns)
+                        {
+                            return false;
+                        }
+                    };
+                    table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                    table.getColumnModel().getColumn(0).setPreferredWidth(100);
+                    table.getColumnModel().getColumn(3).setPreferredWidth(175);
+                    table.getColumnModel().getColumn(4).setPreferredWidth(125);
+
                     table.setGridColor(Color.BLACK);
                     JScrollPane scroller = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
                     scroller.setBackground(Color.lightGray);
-                    scroller.setForeground(Color.lightGray);
-                    scroller.repaint();
-                    scroller.revalidate();
                     panel.add(scroller, BorderLayout.CENTER);
-                    panel.repaint();
-                    panel.revalidate();
+                    frame.add(panel);
                     frame.repaint();
                     frame.revalidate();
                 }
@@ -152,11 +179,53 @@ public class Main {
                         }
                         else
                         {
-                            //final String chosenMonth = String.valueOf(combo1.getSelectedItem());
-                            //final String chosenDay = String.valueOf(combo2.getSelectedItem());
                             JOptionPane.showMessageDialog(null, "You are adding attendance for " + combo1.getSelectedItem() + ". " + combo2.getSelectedItem());
                             options.dispose();
                             files2.showOpenDialog(frame);
+
+                            try
+                            {
+                                File f2 = files2.getSelectedFile();
+                                FileReader fr2 = new FileReader(f2);
+                                BufferedReader br2 = new BufferedReader(fr2);
+
+                                ArrayList<ArrayList<String>> newDay = new ArrayList<ArrayList<String>>();
+
+                                String line;
+                                String[] arr;
+                                String delimiter = ",";
+                                while((line = br2.readLine()) != null)
+                                {
+                                    ArrayList<String> studentLog = new ArrayList<String>();
+                                    arr = line.split(delimiter);
+                                    for(int i = 0; i < arr.length; i++)
+                                    {
+                                        studentLog.add(arr[i]);
+                                    }
+                                    newDay.add(studentLog);
+                                }
+                                attendanceDays.add(newDay);
+
+                                model.addColumn(combo1.getSelectedItem() + ". " + combo2.getSelectedItem());
+                                JTable table = new JTable(model);
+                                table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                                table.getColumnModel().getColumn(0).setPreferredWidth(100);
+                                table.getColumnModel().getColumn(3).setPreferredWidth(175);
+                                table.getColumnModel().getColumn(4).setPreferredWidth(125);
+                                table.setGridColor(Color.BLACK);
+                                JScrollPane scroller = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+                                scroller.setBackground(Color.lightGray);
+                                scroller.setForeground(Color.lightGray);
+                                panel.add(scroller, BorderLayout.CENTER);
+                                frame.add(panel);
+                                frame.repaint();
+                                frame.revalidate();
+
+                            }
+                            catch(IOException ioe)
+                            {
+                                ioe.printStackTrace();
+                            }
                         }
                     }
                 });
@@ -184,10 +253,20 @@ public class Main {
             }
         });
 
-        info.addActionListener(new ActionListener() {
+        about.addMenuListener(new MenuListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void menuSelected(MenuEvent e) {
                 JOptionPane.showMessageDialog(frame, "This program was created by Jose Lugo.");
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+
             }
         });
 
@@ -197,30 +276,4 @@ public class Main {
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
-
-    /*static Object[][] getInfo(JFileChooser f)
-    {
-        try
-        {
-            File f1 = f.getSelectedFile();
-            FileReader fr = new FileReader(f1);
-            BufferedReader br = new BufferedReader(fr);
-            String line;
-            String[] arr;
-            String delimiter = ",";
-            while((line = br.readLine()) != null)
-            {
-                arr = line.split(delimiter);
-                for(int i = 0; i < arr.length; i++)
-                {
-                    System.out.print(arr[i] + "\n");
-                }
-                System.out.println();
-            }
-        }
-        catch(IOException ioe)
-        {
-            ioe.printStackTrace();
-        }
-    }*/
 }
