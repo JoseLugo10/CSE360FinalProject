@@ -4,10 +4,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 public class Main extends JFrame {
@@ -221,7 +218,6 @@ public class Main extends JFrame {
                         else
                         {
                             numberOfCategories++;
-                            numberOfDays++;
                             String date = (combo1.getSelectedItem() + ". " + combo2.getSelectedItem());
                             columns.add(date);
                             String[] newColumns = new String[numberOfCategories];
@@ -260,13 +256,10 @@ public class Main extends JFrame {
                                 }
 
                                 trackedDays.add(totalAttendance);
-
+                                numberOfDays++;
                                 information = new Object[numberOfStudents][numberOfCategories];
 
-                                int loggedStudents = 0;
                                 int stuNum = 0;
-                                String[] missingStudents = new String[numberOfStudents];
-                                int miss = 0;
                                 for(Student student : roster)
                                 {
                                     information[stuNum][0] = student.getIdNumber();
@@ -275,54 +268,36 @@ public class Main extends JFrame {
                                     information[stuNum][3] = student.getProgram();
                                     information[stuNum][4] = student.getLevel();
                                     information[stuNum][5] = student.getASURITE();
-                                    for(int k = 6; k < 6 + numberOfDays; k++)
+                                    for(int i = 6; i < 6 + trackedDays.size(); i++)
                                     {
                                         int amountOfTimes = 0;
                                         int minutes = 0;
-                                        for(int i = 0; i < numberOfLoggedStudents; i++)
+
+                                        for(int j = 0; j < (trackedDays.get(i - 6)).size(); j++)
                                         {
-                                            if(totalAttendance.get(i).getASURITE().equals(roster.get(stuNum).getASURITE()) && amountOfTimes > 0)
+                                            if(trackedDays.get(i - 6).get(j).getASURITE().equals(roster.get(stuNum).getASURITE()) && amountOfTimes > 0)
                                             {
-                                                int extra = totalAttendance.get(i).getMinutes();
+                                                int extra = trackedDays.get(i - 6).get(j).getMinutes();
                                                 minutes = minutes + extra;
                                             }
-                                            else if(totalAttendance.get(i).getASURITE().equals(roster.get(stuNum).getASURITE()) && amountOfTimes == 0)
+                                            else if(trackedDays.get(i - 6).get(j).getASURITE().equals(roster.get(stuNum).getASURITE()) && amountOfTimes == 0)
                                             {
                                                 amountOfTimes++;
-                                                minutes = totalAttendance.get(i).getMinutes();
+                                                minutes = trackedDays.get(i - 6).get(j).getMinutes();
                                             }
                                         }
 
                                         if(minutes > 0)
                                         {
-                                            information[stuNum][k] = String.valueOf(minutes);
-                                            loggedStudents++;
+                                            information[stuNum][i] = String.valueOf(minutes);
                                         }
                                         else
                                         {
-                                            information[stuNum][k] = "0";
-                                            //missingStudents[miss] = roster.get(stuNum).getASURITE();
-                                            miss++;
+                                            information[stuNum][i] = "0";
                                         }
                                     }
                                     stuNum++;
                                 }
-
-                                /*int recognizedStudents = 0;
-                                for(int i = 0; i < miss; i++)
-                                {
-                                    for(int j = 0; j < loggedStudents; j++)
-                                    {
-                                        if(totalAttendance.get(j).getASURITE().equals(missingStudents[i]))
-                                        {
-                                            recognizedStudents++;
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                int randomStudents = miss - recognizedStudents;*/
-
 
                                 model = new DefaultTableModel(information, newColumns);
                                 table = new JTable();
@@ -342,8 +317,8 @@ public class Main extends JFrame {
                                 updated.setLayout(new BorderLayout());
                                 attendanceFinished = new JPanel();
                                 attendanceFinished.setLayout(new GridLayout(2, 1));
-                                amountLoaded = new JLabel("Data loaded for " + loggedStudents + " in the roster.", SwingConstants.CENTER);
-                                unknowns = new JLabel(miss + " addition attendee was found:", SwingConstants.CENTER);
+                                amountLoaded = new JLabel("Data loaded for " + "x" + " in the roster.", SwingConstants.CENTER);
+                                unknowns = new JLabel("y" + " addition attendee was found:", SwingConstants.CENTER);
                                 attendanceFinished.add(amountLoaded);
                                 attendanceFinished.add(unknowns);
                                 updated.add(attendanceFinished, BorderLayout.CENTER);
@@ -351,7 +326,6 @@ public class Main extends JFrame {
                                 updated.setVisible(true);
                                 updated.setSize(200, 100);
                                 updated.setResizable(false);
-
 
                             }
                             catch(IOException ioe)
@@ -373,6 +347,48 @@ public class Main extends JFrame {
         save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
+                try
+                {
+                    File csvFile = new File("filledTable.csv");
+                    FileWriter fw = new FileWriter(csvFile);
+                    BufferedWriter bw = new BufferedWriter(fw);
+
+                    for(int i = 0; i < numberOfCategories; i++)
+                    {
+                        if(i == numberOfCategories - 1)
+                        {
+                            bw.write(columns.get(i));
+                        }
+                        else
+                        {
+                            bw.write(columns.get(i)  + ",");
+                        }
+                    }
+                    bw.write("\n");
+
+                    for(int i = 0; i < numberOfStudents; i++)
+                    {
+                        for(int j = 0; j < numberOfCategories; j++)
+                        {
+                            if(j == numberOfCategories - 1)
+                            {
+                                bw.write(String.valueOf(information[i][j]));
+                            }
+                            else
+                            {
+                                bw.write(String.valueOf(information[i][j]) + ",");
+                            }
+                        }
+                        bw.write("\n");
+                    }
+
+                    bw.close();
+                }
+                catch(IOException ioe)
+                {
+                    ioe.printStackTrace();
+                }
 
             }
         });
