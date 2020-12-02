@@ -833,7 +833,7 @@ public class Main extends JFrame {
                  * a percent range such as 75-70, they will default to the lower bound of those values. i.e. if the percentile is equal to
                  * 33, then they are part of the 30 percent club.
                  */
-                if(percentile == 0)
+                if(percentile == 0 || percentile < 5)
                 {
                     zeroPercent++;
                 }
