@@ -283,6 +283,8 @@ public class Main extends JFrame {
                     mainPanel.repaint();
                     mainPanel.revalidate();
                     add(mainPanel, BorderLayout.CENTER);
+                    repaint();
+                    revalidate();
 
                 }
                 catch(IOException ioe)
@@ -595,6 +597,8 @@ public class Main extends JFrame {
                                 mainPanel.repaint();
                                 mainPanel.revalidate();
                                 add(mainPanel, BorderLayout.CENTER);
+                                repaint();
+                                revalidate();
 
                                 /**
                                  * A dialog message appears showing the amount of students that attendance was logged for, and displaying any student that
@@ -720,7 +724,7 @@ public class Main extends JFrame {
                 /**
                  * We create a JFreeChart object which will have the name of the scatter plot, the axis names, and the dataset.
                  */
-                JFreeChart plotChart = ChartFactory.createScatterPlot("Number of Students in Percentile (Out of 75 Minutes)", "Percentile", "Count", dataset);
+                JFreeChart plotChart = ChartFactory.createScatterPlot("Number of Students in Percentile (Out of 75 Minutes)", "Percentile", "Number of Students", dataset);
 
                 /**
                  * The rest of these variables are used to make sure that the scatter plot looks nice and neat.
